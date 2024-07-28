@@ -78,31 +78,29 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 }
 
 void terminal_putchar(char c) {
-	if (c == '\n') {
-		terminal_row++;
-		terminal_column = 0;
-		return;
+	if (c != '\n') {
+		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 	}
 
-	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-	if (++terminal_column == VGA_WIDTH) 
+	if (++terminal_column == VGA_WIDTH || c == '\n') {
 		terminal_column = 0;
-		
-	if (++terminal_row >= VGA_HEIGHT) {
-		terminal_row = VGA_HEIGHT - 1;
 
-		// scrolling
-		for (size_t y = 1; y < VGA_HEIGHT; y++) {
-			for (size_t x = 0; x < VGA_WIDTH; x++) {
-				const size_t row_above_index = (y-1) * VGA_WIDTH + x;
-				const size_t current_index = y * VGA_WIDTH + x;
-				
-				terminal_buffer[row_above_index] = terminal_buffer[current_index];
+		if (++terminal_row >= VGA_HEIGHT) {
+			terminal_row = VGA_HEIGHT - 1;
+
+			// scrolling
+			for (size_t y = 1; y < VGA_HEIGHT; y++) {
+				for (size_t x = 0; x < VGA_WIDTH; x++) {
+					const size_t row_above_index = (y-1) * VGA_WIDTH + x;
+					const size_t current_index = y * VGA_WIDTH + x;
+					
+					terminal_buffer[row_above_index] = terminal_buffer[current_index];
+				}
 			}
-		}
 
-		for (size_t x = 0; x < VGA_WIDTH; x++) {
-			terminal_putentryat(' ', terminal_color, x, terminal_row);
+			for (size_t x = 0; x < VGA_WIDTH; x++) {
+				terminal_putentryat(' ', terminal_color, x, terminal_row);
+			}
 		}
 	}
 }
@@ -120,9 +118,12 @@ void kernel_main(void) {
 	terminal_initialize();
 
 	terminal_writestring("First line\n");
-	for (size_t y = 0; y < VGA_HEIGHT; y++) {
+	terminal_writestring("Second line\n");
+	for (size_t y = 2; y < 23; y++) {
 		terminal_writestring("Hello, kernel World!\n");
 	}
-	terminal_writestring("Last line");
-
+	terminal_writestring("almost last line\n");
+	terminal_writestring("last line\n");
+	terminal_writestring("last line2\n");
+	terminal_writestring("last line3\n");
 }
